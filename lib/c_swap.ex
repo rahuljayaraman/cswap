@@ -8,7 +8,7 @@ defmodule CSwap do
   end
 
   def mockable(module, fun, args) do
-    prefix = get_token() || @global_prefix
+    prefix = get_label() || @global_prefix
     key = build_key(prefix, module, fun, length(args))
     mock = MockStore.get(key)
 
@@ -26,9 +26,7 @@ defmodule CSwap do
   def mock(module, fun, mock_fn, mode \\ :local) when is_function(mock_fn) do
     prefix =
       if mode == :local do
-        token = UUID.uuid4()
-        _prev_token = set_token(token)
-        token
+        set_label()
       else
         @global_prefix
       end
@@ -41,14 +39,25 @@ defmodule CSwap do
 
   def reset(), do: MockStore.reset()
 
-  defp set_token(token) do
-    :seq_trace.set_token(:label, token)
+  defp set_label() do
+    case get_label() do
+      nil ->
+        label = UUID.uuid4()
+        :seq_trace.set_token(:label, label)
+        label
+
+      label ->
+        label
+    end
   end
 
-  defp get_token() do
+  defp get_label() do
     case :seq_trace.get_token() do
-      {_, token, _, _, _} -> token
-      [] -> nil
+      {_, label, _, _, _} ->
+        label
+
+      [] ->
+        nil
     end
   end
 
