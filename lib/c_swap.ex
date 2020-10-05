@@ -52,8 +52,8 @@ defmodule CSwap do
   end
 
   defp get_label() do
-    case :seq_trace.get_token() do
-      {_, label, _, _, _} ->
+    case :seq_trace.get_token(:label) do
+      {:label, label} ->
         label
 
       [] ->
